@@ -5,24 +5,24 @@
         const uint min_read = 1;
 
         /// <summary>
-        /// delay in miliseconds
+        /// delay in miliseconds, max 1000
         /// </summary>
-        public UInt16 DelayWriteStep { get; set; } = 0;
+        public uint DelayWriteStep { get; set; } = 0;
 
         /// <summary>
         /// Balanced for multi streams read/write. Maximum result for per step calc <see cref="CalcRead"/> and <see cref="CalcWrite"/>"/>
         /// </summary>
-        public UInt16 Balanced { get; set; } = UInt16.MaxValue;
+        public uint Balanced { get; set; } = int.MaxValue;
 
         /// <summary>
         /// zero mean no limit
         /// </summary>
-        public UInt16 ReadBytesPerTime { get; set; } = 0;
+        public uint ReadBytesPerTime { get; set; } = 0;
 
         /// <summary>
         /// zero mean no limit
         /// </summary>
-        public UInt16 WriteBytesPerTime { get; set; } = 0;
+        public uint WriteBytesPerTime { get; set; } = 0;
 
         /// <summary>
         /// less or equal zero mean no limit
