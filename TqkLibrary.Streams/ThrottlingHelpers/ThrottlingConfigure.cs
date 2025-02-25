@@ -7,22 +7,22 @@
         /// <summary>
         /// delay in miliseconds
         /// </summary>
-        public uint DelayWriteStep { get; set; } = 0;
+        public UInt16 DelayWriteStep { get; set; } = 0;
 
         /// <summary>
         /// Balanced for multi streams read/write. Maximum result for per step calc <see cref="CalcRead"/> and <see cref="CalcWrite"/>"/>
         /// </summary>
-        public uint Balanced { get; set; } = int.MaxValue;
+        public UInt16 Balanced { get; set; } = UInt16.MaxValue;
 
         /// <summary>
         /// zero mean no limit
         /// </summary>
-        public uint ReadBytesPerTime { get; set; } = 0;
+        public UInt16 ReadBytesPerTime { get; set; } = 0;
 
         /// <summary>
         /// zero mean no limit
         /// </summary>
-        public uint WriteBytesPerTime { get; set; } = 0;
+        public UInt16 WriteBytesPerTime { get; set; } = 0;
 
         /// <summary>
         /// less or equal zero mean no limit
@@ -50,7 +50,7 @@
                     _readBytes = 0;
                 }
 
-                count = Math.Max(min_read, Math.Min(ReadBytesPerTime - _readBytes, Balanced <= 0 ? int.MaxValue : Balanced));
+                count = Math.Max(min_read, Math.Min(ReadBytesPerTime - _readBytes, Balanced <= 0 ? UInt16.MaxValue : Balanced));
                 _readBytes += count;
 
                 return count;
@@ -99,7 +99,7 @@
                     _writeBytes = 0;
                 }
 
-                count = Math.Max(0, Math.Min(WriteBytesPerTime - _writeBytes, Balanced <= 0 ? int.MaxValue : Balanced));
+                count = Math.Max(0, Math.Min(WriteBytesPerTime - _writeBytes, Balanced <= 0 ? UInt16.MaxValue : Balanced));
                 _writeBytes += count;
 
                 return count;

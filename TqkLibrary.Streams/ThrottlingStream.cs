@@ -56,7 +56,7 @@ namespace TqkLibrary.Streams
                     offset += stepCount;
                     count -= stepCount;
                 }
-                await Task.Delay(Math.Max(Configure.DelayWriteStep, 0), cancellationToken);
+                await Task.Delay(Configure.DelayWriteStep, cancellationToken);
             }
         }
     }
