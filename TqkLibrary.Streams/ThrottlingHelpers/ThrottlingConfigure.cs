@@ -1,34 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TqkLibrary.Streams.ThrottlingHelpers
+﻿namespace TqkLibrary.Streams.ThrottlingHelpers
 {
     public class ThrottlingConfigure
     {
-        const int min_read = 1;
+        const uint min_read = 1;
 
         /// <summary>
         /// delay in miliseconds
         /// </summary>
-        public int DelayWriteStep { get; set; } = 10;
+        public uint DelayWriteStep { get; set; } = 0;
 
         /// <summary>
         /// Balanced for multi streams read/write. Maximum result for per step calc <see cref="CalcRead"/> and <see cref="CalcWrite"/>"/>
         /// </summary>
-        public int Balanced { get; set; } = int.MaxValue;
+        public uint Balanced { get; set; } = int.MaxValue;
 
         /// <summary>
-        /// less or equal zero mean no limit
+        /// zero mean no limit
         /// </summary>
-        public int ReadBytesPerTime { get; set; } = 0;
+        public uint ReadBytesPerTime { get; set; } = 0;
 
         /// <summary>
-        /// less or equal zero mean no limit
+        /// zero mean no limit
         /// </summary>
-        public int WriteBytesPerTime { get; set; } = 0;
+        public uint WriteBytesPerTime { get; set; } = 0;
 
         /// <summary>
         /// less or equal zero mean no limit
@@ -38,8 +32,13 @@ namespace TqkLibrary.Streams.ThrottlingHelpers
 
         readonly object _lock_read = new();
         DateTime _lastTimeRead = DateTime.MinValue;
-        int _readBytes = 0;
+        uint _readBytes = 0;
         public int CalcRead(int count)
+        {
+            if (count < 0) throw new InvalidOperationException($"{nameof(count)} must be greater or equal 0");
+            return (int)CalcRead((uint)count);
+        }
+        public uint CalcRead(uint count)
         {
             if (ReadBytesPerTime <= 0 || Time <= TimeSpan.Zero || count == 0) return count;
             lock (_lock_read)
@@ -57,13 +56,22 @@ namespace TqkLibrary.Streams.ThrottlingHelpers
                 return count;
             }
         }
-        public void UpdateRealRead(int count)
+        public void UpdateRealRead(int caculated, int realRead)
         {
-            if(count > 0)
+            if (caculated < 0) throw new InvalidOperationException($"{nameof(caculated)} must be greater or equal 0");
+            if (realRead < 0) throw new InvalidOperationException($"{nameof(realRead)} must be greater or equal 0");
+            UpdateRealRead((uint)caculated, (uint)realRead);
+        }
+        public void UpdateRealRead(uint caculated, uint realRead)
+        {
+            if (caculated < realRead) throw new InvalidOperationException(realRead + " must be less or equal " + caculated);
+            uint count = caculated - realRead;
+            if (count > 0)
             {
                 lock (_lock_read)
                 {
-                    _readBytes -= count;
+                    if (count >= _readBytes) _readBytes = 0;
+                    else _readBytes -= count;
                 }
             }
         }
@@ -73,8 +81,13 @@ namespace TqkLibrary.Streams.ThrottlingHelpers
 
         readonly object _lock_write = new();
         DateTime _lastTimeWrite = DateTime.MinValue;
-        int _writeBytes = 0;
+        uint _writeBytes = 0;
         public int CalcWrite(int count)
+        {
+            if (count < 0) throw new InvalidOperationException($"{nameof(count)} must be greater or equal 0");
+            return (int)CalcWrite((uint)count);
+        }
+        public uint CalcWrite(uint count)
         {
             if (WriteBytesPerTime <= 0 || Time <= TimeSpan.Zero || count == 0) return count;
             lock (_lock_write)
