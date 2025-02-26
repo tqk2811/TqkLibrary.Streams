@@ -2,12 +2,10 @@
 {
     public class ThrottlingConfigure
     {
-        const uint min_read = 1;
-
         /// <summary>
         /// delay in miliseconds, max 1000
         /// </summary>
-        public uint DelayWriteStep { get; set; } = 0;
+        public uint DelayStep { get; set; } = 0;
 
         /// <summary>
         /// Balanced for multi streams read/write. Maximum result for per step calc <see cref="CalcRead"/> and <see cref="CalcWrite"/>"/>
@@ -50,7 +48,7 @@
                     _readBytes = 0;
                 }
 
-                count = Math.Max(min_read, Math.Min(ReadBytesPerTime - _readBytes, Balanced <= 0 ? UInt16.MaxValue : Balanced));
+                count = Math.Min(count, Math.Max(0, Math.Min(ReadBytesPerTime - _readBytes, Balanced <= 0 ? UInt16.MaxValue : Balanced)));
                 _readBytes += count;
 
                 return count;
@@ -99,7 +97,7 @@
                     _writeBytes = 0;
                 }
 
-                count = Math.Max(0, Math.Min(WriteBytesPerTime - _writeBytes, Balanced <= 0 ? UInt16.MaxValue : Balanced));
+                count = Math.Min(count, Math.Max(0, Math.Min(WriteBytesPerTime - _writeBytes, Balanced <= 0 ? UInt16.MaxValue : Balanced)));
                 _writeBytes += count;
 
                 return count;

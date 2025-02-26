@@ -38,21 +38,22 @@
         public override void Close() => _baseStream.Close();
 
 
+        //ReadAsync -> BeginRead & EndRead -> Read
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-            => _baseStream.BeginRead(buffer, offset, count, callback, state);//->_baseStream.Read & block threadpool (maybe)
-        public override int EndRead(IAsyncResult asyncResult)
-            => _baseStream.EndRead(asyncResult);
+        //public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+        //    => _baseStream.BeginRead(buffer, offset, count, callback, state);
+        //public override int EndRead(IAsyncResult asyncResult)
+        //    => _baseStream.EndRead(asyncResult);
         public override int Read(byte[] buffer, int offset, int count)
             => _baseStream.Read(buffer, offset, count);
 
 
 
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-            => _baseStream.BeginWrite(buffer, offset, count, callback, state);//->_baseStream.Write & block threadpool (maybe)
-        public override void EndWrite(IAsyncResult asyncResult)
-            => _baseStream.EndWrite(asyncResult);
+        //public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+        //    => _baseStream.BeginWrite(buffer, offset, count, callback, state);
+        //public override void EndWrite(IAsyncResult asyncResult)
+        //    => _baseStream.EndWrite(asyncResult);
         public override void Write(byte[] buffer, int offset, int count)
             => _baseStream.Write(buffer, offset, count);
     }

@@ -1,4 +1,5 @@
-﻿using TqkLibrary.Streams.ThrottlingHelpers;
+﻿using System;
+using TqkLibrary.Streams.ThrottlingHelpers;
 
 namespace TqkLibrary.Streams
 {
@@ -15,27 +16,32 @@ namespace TqkLibrary.Streams
         }
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-            => throw new NotSupportedException();
+            => ((Stream)this).BeginRead(buffer, offset, count, callback, state);
         public override int EndRead(IAsyncResult asyncResult)
-            => throw new NotSupportedException();
+            => ((Stream)this).EndRead(asyncResult);
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-            => throw new NotSupportedException();
+            => ((Stream)this).BeginWrite(buffer, offset, count, callback, state);
         public override void EndWrite(IAsyncResult asyncResult)
-            => throw new NotSupportedException();
+            => ((Stream)this).EndWrite(asyncResult);
 
 
 
         public override int Read(byte[] buffer, int offset, int count)
-        {
-            int calcCount = Configure.CalcRead(count);
-            int bytes_read = _baseStream.Read(buffer, offset, calcCount);
-            Configure.UpdateRealRead(calcCount, bytes_read);
-            return bytes_read;
-        }
+            => throw new NotSupportedException();//mustbe delay, can't add
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
         {
-            int calcCount = Configure.CalcRead(count);
-            int bytes_read = await base.ReadAsync(buffer, offset, calcCount, cancellationToken);
+            if (count <= 0) return 0;
+
+            int calcCount = 0;
+            while (true)
+            {
+                calcCount = Configure.CalcRead(count);
+                if (calcCount == 0)
+                    await Task.Delay((int)Math.Min(Configure.DelayStep, 1000), cancellationToken);
+                else
+                    break;
+            }
+            int bytes_read = await _baseStream.ReadAsync(buffer, offset, calcCount, cancellationToken);
             Configure.UpdateRealRead(calcCount, bytes_read);
             return bytes_read;
         }
@@ -46,6 +52,7 @@ namespace TqkLibrary.Streams
             => throw new NotSupportedException();//mustbe delay, can't add
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
         {
+            //count = count - offset;
             while (count > 0)
             {
                 int stepCount = Configure.CalcWrite(count);
@@ -56,7 +63,7 @@ namespace TqkLibrary.Streams
                     offset += stepCount;
                     count -= stepCount;
                 }
-                await Task.Delay((int)Math.Min(Configure.DelayWriteStep, 1000), cancellationToken);
+                await Task.Delay((int)Math.Min(Configure.DelayStep, 1000), cancellationToken);
             }
         }
     }
