@@ -38,7 +38,7 @@
         public override void Close() => _baseStream.Close();
 
 
-        //ReadAsync -> BeginRead & EndRead -> Read
+        //ReadAsync -> BeginRead / EndRead -> Read
 
         //public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
         //    => _baseStream.BeginRead(buffer, offset, count, callback, state);

@@ -15,19 +15,9 @@ namespace TqkLibrary.Streams
             this.Configure = configure ?? throw new ArgumentNullException(nameof(configure));
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-            => ((Stream)this).BeginRead(buffer, offset, count, callback, state);
-        public override int EndRead(IAsyncResult asyncResult)
-            => ((Stream)this).EndRead(asyncResult);
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
-            => ((Stream)this).BeginWrite(buffer, offset, count, callback, state);
-        public override void EndWrite(IAsyncResult asyncResult)
-            => ((Stream)this).EndWrite(asyncResult);
 
 
 
-        public override int Read(byte[] buffer, int offset, int count)
-            => throw new NotSupportedException();//mustbe delay, can't add
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
         {
             if (count <= 0) return 0;
@@ -45,11 +35,22 @@ namespace TqkLibrary.Streams
             Configure.UpdateRealRead(calcCount, bytes_read);
             return bytes_read;
         }
+        //ReadAsync -> BeginRead/EndRead -> Read
+        [Obsolete]
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+            => throw new NotSupportedException();
+        [Obsolete]
+        public override int EndRead(IAsyncResult asyncResult)
+            => throw new NotSupportedException();
+        [Obsolete]
+        public override int Read(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException();//mustbe delay, can't add -> so BeginRead/EndRead must exclude
 
 
 
-        public override void Write(byte[] buffer, int offset, int count)
-            => throw new NotSupportedException();//mustbe delay, can't add
+
+
+
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken = default)
         {
             //count = count - offset;
@@ -66,5 +67,14 @@ namespace TqkLibrary.Streams
                 await Task.Delay((int)Math.Min(Configure.DelayStep, 1000), cancellationToken);
             }
         }
+        [Obsolete]
+        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback? callback, object? state)
+            => throw new NotSupportedException();
+        [Obsolete]
+        public override void EndWrite(IAsyncResult asyncResult)
+            => throw new NotSupportedException();
+        [Obsolete]
+        public override void Write(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException();//mustbe delay, can't add -> so BeginWrite/EndWrite must exclude
     }
 }
