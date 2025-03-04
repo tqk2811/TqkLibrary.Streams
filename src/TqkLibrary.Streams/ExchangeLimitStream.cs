@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace TqkLibrary.Streams
@@ -20,46 +21,66 @@ namespace TqkLibrary.Streams
         }
 
         uint _bytesReadedCount = 0;
-        readonly object _lockRead = new object();
         public override int Read(byte[] buffer, int offset, int count)
+        {
+            int byte_read = base.Read(buffer, offset, _CalcRead(count));
+            _UpdateRead(byte_read);
+            return byte_read;
+        }
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            int byte_read = await base.ReadAsync(buffer, offset, _CalcRead(count), cancellationToken);
+            _UpdateRead(byte_read);
+            return byte_read;
+        }
+        int _CalcRead(int count)//stream should synchronize call
         {
             if (MaxBytesRead != 0 && count > 0)
             {
-                lock (_lockRead)
+                if (MaxBytesRead >= _bytesReadedCount)
                 {
                     uint diff = MaxBytesRead - _bytesReadedCount;
                     count = (int)Math.Min(diff, (uint)count);
-                    if (count == 0) return count;
                 }
-            }
-            int byte_read = base.Read(buffer, offset, count);
-            if(byte_read > 0)
-            {
-                lock (_lockRead)
+                else
                 {
-                    _bytesReadedCount += (uint)byte_read;
+                    count = 0;
                 }
             }
-            return byte_read;
+            return count;
         }
+        void _UpdateRead(int byte_read)//stream should synchronize call
+        {
+            if (byte_read > 0)
+            {
+                _bytesReadedCount += (uint)byte_read;
+            }
+        }
+
+
+
 
 
         uint _bytesWritedCount = 0;
-        readonly object _lockWrite = new object();
         public override void Write(byte[] buffer, int offset, int count)
+        {
+            _baseStream.Write(buffer, offset, _CalcAndUpdateWrite(count));
+        }
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return _baseStream.WriteAsync(buffer, offset, _CalcAndUpdateWrite(count), cancellationToken);
+        }
+
+        int _CalcAndUpdateWrite(int count)//stream should synchronize call
         {
             if (MaxBytesWrite != 0 && count > 0)
             {
-                lock (_lockWrite)
-                {
-                    uint diff = MaxBytesWrite - _bytesWritedCount;
-                    count = (int)Math.Min(diff, (uint)count);
-                    if (count == 0) return;
-                    _bytesWritedCount += (uint)count;
-                }
+                uint diff = MaxBytesWrite - _bytesWritedCount;
+                count = (int)Math.Min(diff, (uint)count);
+                if (count == 0) return count;
+                _bytesWritedCount += (uint)count;
             }
-            base.Write(buffer, offset, count);
+            return count;
         }
-
     }
 }
